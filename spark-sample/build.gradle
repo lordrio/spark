@@ -5,7 +5,7 @@ android {
 
     defaultConfig {
         applicationId "com.robinhood.spark.sample"
-        minSdkVersion 14
+        minSdkVersion 20
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"

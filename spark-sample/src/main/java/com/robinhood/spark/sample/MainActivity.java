@@ -16,7 +16,9 @@
 
 package com.robinhood.spark.sample;
 
+import android.animation.Animator;
 import android.os.Bundle;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
@@ -47,6 +49,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         sparkView = findViewById(R.id.sparkview);
+        final MorphSparkAnimator morphSparkAnimator = new MorphSparkAnimator();
+        morphSparkAnimator.setDuration(2000L);
+        morphSparkAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
 
         adapter = new RandomizedAdapter();
         sparkView.setAdapter(adapter);
@@ -54,8 +59,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onScrubbed(Object value) {
                 if (value == null) {
+                    adapter.setDev(4);
+
+
+                    sparkView.setSparkAnimator(morphSparkAnimator);
                     scrubInfoTextView.setText(R.string.scrub_empty);
                 } else {
+                    sparkView.setSparkAnimator(null);
+                    adapter.setDev(1);
                     scrubInfoTextView.setText(getString(R.string.scrub_format, value));
                 }
             }
@@ -72,10 +83,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
             {
-                if ( isChecked )
-                    sparkView.setFillType(SparkView.FillType.DOWN);
-                else
-                    sparkView.setFillType(SparkView.FillType.NONE);
+                if ( isChecked ) adapter.setDev(5);
+                    //sparkView.setFillType(SparkView.FillType.DOWN);
+                else adapter.setDev(1);
+                    //sparkView.setFillType(SparkView.FillType.NONE);
             }
         });
         
@@ -126,34 +137,49 @@ public class MainActivity extends AppCompatActivity {
     public static class RandomizedAdapter extends SparkAdapter {
         private final float[] yData;
         private final Random random;
+        private int dev = 1;
 
         public RandomizedAdapter() {
             random = new Random();
-            yData = new float[50];
+            yData = new float[200];
             randomize();
         }
 
         public void randomize() {
+            float previousRand = random.nextFloat();
             for (int i = 0, count = yData.length; i < count; i++) {
-                yData[i] = random.nextFloat();
+                float toAdd = previousRand;
+                if(random.nextBoolean()) {
+                    toAdd += random.nextFloat() / 10.0f;
+                } else {
+                    toAdd += random.nextFloat() / -10.0f;
+                }
+                yData[i] = toAdd;
+                previousRand = yData[i];
             }
+            notifyDataSetChanged();
+        }
+
+        public void setDev(int i) {
+            if(dev == i) return;
+            dev = i;
             notifyDataSetChanged();
         }
 
         @Override
         public int getCount() {
-            return yData.length;
+            return yData.length / dev;
         }
 
         @NonNull
         @Override
         public Object getItem(int index) {
-            return yData[index];
+            return yData[index * dev];
         }
 
         @Override
         public float getY(int index) {
-            return yData[index];
+            return yData[index * dev];
         }
     }
 }

@@ -24,9 +24,12 @@ import android.database.DataSetObserver;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.CornerPathEffect;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.RadialGradient;
 import android.graphics.RectF;
+import android.graphics.Shader;
 import android.os.Build;
 import android.os.Handler;
 import androidx.annotation.ColorInt;
@@ -104,6 +107,7 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
 
     // the onDraw data
     private final Path renderPath = new Path();
+    private final Path fillPath = new Path();
     private final Path sparkPath = new Path();
     private final Path baseLinePath = new Path();
     private final Path scrubLinePath = new Path();
@@ -187,8 +191,8 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
         }
 
         sparkFillPaint.set(sparkLinePaint);
-        sparkFillPaint.setColor(fillColor);
         sparkFillPaint.setStyle(Paint.Style.FILL);
+        sparkFillPaint.setDither(true);
         sparkFillPaint.setStrokeWidth(0);
 
         baseLinePaint.setStyle(Paint.Style.STROKE);
@@ -293,6 +297,24 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
         renderPath.reset();
         renderPath.addPath(sparkPath);
 
+        {
+            final float podok = (float) getHeight() - getPaddingBottom();
+            final float lastX = scaleHelper.getX(adapter.getX(adapter.getCount() - 1));
+            // line up or down to the fill edge
+            sparkPath.lineTo(lastX, podok);
+            // line straight left to far edge of the view
+            sparkPath.lineTo(getPaddingStart(), podok);
+            // closes line back on the first point
+            sparkPath.close();
+
+            fillPath.reset();
+            fillPath.addPath(sparkPath);
+        }
+
+        LinearGradient gradient = new LinearGradient(0, 0, 0, getHeight(), lineColor,
+            0x00FFFFFF, android.graphics.Shader.TileMode.CLAMP);
+        sparkFillPaint.setShader(gradient);
+
         invalidate();
     }
 
@@ -360,10 +382,24 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
      * Set the path to animate in onDraw, used for getAnimation purposes
      */
     public void setAnimationPath(@NonNull Path animationPath) {
+        float fillY = getFillEdge() != null ? getFillEdge() : 0;
+
         this.renderPath.reset();
         this.renderPath.addPath(animationPath);
-        this.renderPath.rLineTo(0, 0);
+        this.renderPath.rLineTo(0, fillType == FillType.UP ? -getHeight() : fillY);
+        if (fillType != FillType.NONE) {
+            this.renderPath.lineTo(0, fillY);
+        }
+        {
+            this.fillPath.reset();
+            this.fillPath.addPath(animationPath);
+            this.fillPath.rLineTo(0, (float) getHeight() - getPaddingBottom());
+            this.fillPath.lineTo(0, (float) getHeight() - getPaddingBottom());
 
+            LinearGradient gradient = new LinearGradient(0, 0, 0, getHeight(), lineColor,
+                0x00FFFFFF, android.graphics.Shader.TileMode.CLAMP);
+            sparkFillPaint.setShader(gradient);
+        }
         invalidate();
     }
 
@@ -406,9 +442,9 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
         super.onDraw(canvas);
         canvas.drawPath(baseLinePath, baseLinePaint);
 
-        if(fillType != FillType.NONE){
-            canvas.drawPath(renderPath, sparkFillPaint);
-        }
+        //if(fillType != FillType.NONE){
+            canvas.drawPath(fillPath, sparkFillPaint);
+        //}
 
         if(clipAmount < 1) {
             canvas.drawPath(renderPath, sparkLineUnderPaint);

@@ -18,6 +18,7 @@
         android:layout_height="200dp"
         app:spark_lineColor="@color/colorAccent"
         app:spark_fillColor="@color/colorAccentTransparent"
+        app:spark_cornerRadius="10dp"
         app:spark_scrubEnabled="true"/>
 
     <TextView
