@@ -124,6 +124,7 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
     private Paint baseLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint scrubLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private @Nullable OnScrubListener scrubListener;
+    private @Nullable OnScrubLocationListener scrubLocListener;
     private @NonNull ScrubGestureDetector scrubGestureDetector;
     private @Nullable Animator pathAnimator;
     private final RectF contentRect = new RectF();
@@ -793,6 +794,22 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
     }
 
     /**
+     * Get the current {@link OnScrubListener}
+     */
+    @Nullable
+    public OnScrubLocationListener getScrubLocationListener() {
+        return scrubLocListener;
+    }
+
+    /**
+     * Set a {@link OnScrubListener} to be notified of the user's scrubbing gestures.
+     */
+    public void setScrubLocationListener(@Nullable OnScrubLocationListener scrubListener) {
+        this.scrubLocListener = scrubListener;
+    }
+
+
+    /**
      * Get the backing {@link SparkAdapter}
      */
     @Nullable
@@ -994,6 +1011,9 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
                 scrubListener.onScrubbed(adapter.getItem(index));
             }
         }
+        if(scrubLocListener != null) {
+            scrubLocListener.onScrubbed(x, x/getWidth());
+        }
 
         setScrubLine(x);
         if(clipOnScrub) {
@@ -1017,6 +1037,10 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
          * that the user has stopped scrubbing.
          */
         void onScrubbed(@Nullable Object value);
+    }
+
+    public interface OnScrubLocationListener {
+        void onScrubbed(float value, float percent);
     }
 
     private final DataSetObserver dataSetObserver = new DataSetObserver() {

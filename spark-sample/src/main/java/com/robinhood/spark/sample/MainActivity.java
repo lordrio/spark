@@ -63,12 +63,18 @@ public class MainActivity extends AppCompatActivity {
 
 
                     sparkView.setSparkAnimator(morphSparkAnimator);
-                    scrubInfoTextView.setText(R.string.scrub_empty);
+                    //scrubInfoTextView.setText(R.string.scrub_empty);
                 } else {
                     sparkView.setSparkAnimator(null);
                     adapter.setDev(1);
-                    scrubInfoTextView.setText(getString(R.string.scrub_format, value));
+                    //scrubInfoTextView.setText(getString(R.string.scrub_format, value));
                 }
+            }
+        });
+
+        sparkView.setScrubLocationListener(new SparkView.OnScrubLocationListener() {
+            @Override public void onScrubbed(float value, float percent) {
+                scrubInfoTextView.setText(String.format("%.2f %.2f", value, percent));
             }
         });
 
