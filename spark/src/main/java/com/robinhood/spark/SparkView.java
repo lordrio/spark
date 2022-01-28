@@ -24,6 +24,7 @@ import android.database.DataSetObserver;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.CornerPathEffect;
+import android.graphics.DashPathEffect;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -95,6 +96,7 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
     // styleable values
     @ColorInt private int lineColor;
     @ColorInt private int fillColor;
+    @ColorInt private int underPaintColor;
     private float lineWidth;
     private float cornerRadius;
     @FillType private int fillType = FillType.NONE;
@@ -127,7 +129,7 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
     private @Nullable Animator pathAnimator;
     private final RectF contentRect = new RectF();
     private float clipAmount = 1f;
-    private RectF clippedRect = new RectF();
+    private final RectF clippedRect = new RectF();
     public boolean clipOnScrub;
 
     private List<Float> xPoints;
@@ -484,6 +486,12 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
         invalidate();
     }
 
+    public void setUnderPaintColor(@ColorInt int lineColor) {
+        this.underPaintColor = lineColor;
+        sparkLineUnderPaint.setColor(lineColor);
+        invalidate();
+    }
+
     /**
      * Get the color of the sparkline
      */
@@ -573,6 +581,14 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
     public void setScrubLinePaint(@NonNull Paint scrubLinePaint) {
         this.scrubLinePaint = scrubLinePaint;
         invalidate();
+    }
+
+    public void setScrubDottedLine(boolean isDotted) {
+        if(isDotted) {
+            scrubLinePaint.setPathEffect(new DashPathEffect(new float[] { 10f, 20f }, 0f));
+        } else {
+            scrubLinePaint.setPathEffect(null);
+        }
     }
 
     /**
