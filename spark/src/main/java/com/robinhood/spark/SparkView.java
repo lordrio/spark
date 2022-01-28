@@ -96,7 +96,6 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
     // styleable values
     @ColorInt private int lineColor;
     @ColorInt private int fillColor;
-    @ColorInt private int underPaintColor;
     private float lineWidth;
     private float cornerRadius;
     @FillType private int fillType = FillType.NONE;
@@ -487,9 +486,12 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
     }
 
     public void setUnderPaintColor(@ColorInt int lineColor) {
-        this.underPaintColor = lineColor;
         sparkLineUnderPaint.setColor(lineColor);
         invalidate();
+    }
+
+    public void enableClip(boolean clip) {
+        this.clipOnScrub = clip;
     }
 
     /**
